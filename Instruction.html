@@ -1,0 +1,21 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+{{ block title }}
+   市场资产交易游戏
+{{ endblock }}
+{% block content %}
+
+
+{% if state_independent %}
+
+<iframe src="{% static 'Instruction_A2S2_inde.pdf' %}" width="100%" height="1000px" style="border: none;"></iframe>
+
+{% else %}
+
+<iframe src="{% static 'Instruction_A2S2_de.pdf' %}" width="100%" height="1000px" style="border: none;"></iframe>
+
+{% endif %}
+
+{% next_button %}
+
+{% endblock %}

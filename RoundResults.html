@@ -1,0 +1,59 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+本轮结果
+{% endblock %}
+
+{% block content %}
+
+<!-- 第一个矩阵的抽取结果 -->
+<div class="alert alert-primary">
+    第一个矩阵抽取结果：<br>
+    抽中玩家ID：{{ round1_selected_player_id }}<br>  <!-- 直接显示，无需过滤器 -->
+    抽中颜色：<span style="display: inline-block; width: 20px; height: 20px; background: {{ round1_selected_color_css }}; border: 1px solid #333; vertical-align: middle;"></span>
+    {{ round1_selected_color }}  <!-- 直接显示 -->
+</div>
+
+<!-- 若有第二轮，显示第二轮结果 -->
+{% if has_round2 %}
+<div class="alert alert-secondary">
+    第二个矩阵抽取结果（最终生效）：<br>
+    抽中玩家ID：{{ selected_player_id }}<br>  <!-- 直接显示 -->
+    抽中颜色：<span style="display: inline-block; width: 20px; height: 20px; background: {{ selected_color_css }}; border: 1px solid #333; vertical-align: middle;"></span>
+    {{ selected_color }}  <!-- 直接显示 -->
+</div>
+{% else %}
+<div class="alert alert-secondary">
+    最终生效结果：第一个矩阵抽取结果（无第二轮）
+</div>
+{% endif %}
+
+<!-- 资产收益详情（不变） -->
+<div class="card mt-3">
+    <div class="card-header">
+        <h5>资产收益详情</h5>
+    </div>
+    <div class="card-body">
+        <p>现金余额：{{ settled_cash }}</p>
+        <p>资产A持有量：{{ asset_a_unit }}，单位回报：{{ asset_a_return }}，总回报：{{ asset_a_total_return }}</p>
+        {% if num_assets >= 2 %}
+        <p>资产B持有量：{{ asset_b_unit }}，单位回报：{{ asset_b_return }}，总回报：{{ asset_b_total_return }}</p>
+        {% endif %}
+        {% if num_assets >= 3 %}
+        <p>资产C持有量：{{ asset_c_unit }}，单位回报：{{ asset_c_return }}，总回报：{{ asset_c_total_return }}</p>
+        {% endif %}
+        {% if num_assets == 4 %}
+        <p>资产D持有量：{{ asset_d_unit }}，单位回报：{{ asset_d_return }}，总回报：{{ asset_d_total_return }}</p>
+        {% endif %}
+        <div class="alert alert-success mt-3">
+            本轮总收益：<strong>{{ payoff }}</strong>
+        </div>
+    </div>
+</div>
+
+<p class="text-center text-muted mt-3">
+    页面将在{{ timeout_seconds }}秒后自动跳转...
+</p>
+
+{% endblock %}

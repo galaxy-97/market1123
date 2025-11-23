@@ -1,0 +1,24 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+最终结果
+{% endblock %}
+{% block content %}
+<style>
+    .info {
+        padding: 20px;
+        background-color: rgb(202, 186, 15);
+        color: white;
+    }
+</style>
+
+<h4 class="info">恭喜！你已经完成了本场实验。</h4>
+在市场资产交易游戏中，你的收益为 {{ salience_payoff }}，随机选自第{{ selected_round }}轮。
+你的实验最终报酬为：第一个风险选择游戏的收益{{ mpl_payoff }} points乘以4，
+加上市场交易游戏的收益{{ salience_payoff }}除以9，
+再加上10元的参与报酬，
+共计{{ total_payoff }}元人民币。
+报酬将在48小时内发送至你留下的支付宝账号。
+请在离场前与主持人确认，感谢你参与本场实验！
+{% endblock %}

@@ -1,0 +1,951 @@
+{% load staticfiles otree %}
+
+{% block title %}
+市场
+{% endblock %}
+
+{% block scripts %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+
+    .flex-container {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    .info {
+        padding: 20px;
+        background-color: rgb(15, 171, 202);
+        color: white;
+    }
+
+    #online {
+        width: 100vw;
+        margin-left: 50%;
+        transform: translateX(-50%);
+    }
+
+
+    .market-container {
+        margin-top: 10px;
+    }
+
+    .market-column-wrapper {
+        flex: 1;
+        margin: 0 2px; /* 为每个框添加间距 */
+    }
+
+    .market-column {
+        border: 1px solid black;
+        padding: 10px;
+        height: 300px;
+        overflow-y: auto;
+    }
+
+    h5.text-center {
+        margin-bottom: -2px; /* 让标题靠近框上方 */
+        margin-top: 0; /* 删除默认的顶部margin */
+        text-align: center;
+    }
+
+    /* 颜色方块样式（统一与矩阵页面保持一致） */
+    .color-cell {
+        width: 20px;
+        height: 20px;
+        display: inline-block;
+        margin-right: 5px;
+        vertical-align: middle;
+        border: 1px solid #999; /* 与矩阵页面统一边框样式 */
+    }
+</style>
+
+{% if is_practice %}
+<div class="info">
+    <strong>Info:</strong> 这是一个练习轮。
+</div>
+{% endif %}
+
+{% if state_independent %}
+<div class="info">
+    <strong>Info:</strong> 不同资产的状态独立抽取。
+</div>
+{% endif %}
+
+
+<div class="flex-container">
+    <div>
+        <div>
+            交易轮次: {{ round_number }}
+        </div>
+        <div>
+            参与交易人数: {{ number_of_player }}
+        </div>
+    </div>
+
+    <!-- 黑白付息情况（修改为与矩阵页面一致的显示形式） -->
+    <div style="margin: 0 10px; margin-top: 20px;">
+        <table style="border-collapse: collapse; width: 100%; text-align: center; margin: 0 auto;">
+            <thead>
+                <tr style="border: 1px solid #333; background-color: #f0f0f0;">
+                    <th style="border: 1px solid #333; padding: 8px;">颜色</th>
+                    <th style="border: 1px solid #333; padding: 8px;">含义</th>
+                    <th style="border: 1px solid #333; padding: 8px;">概率</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        <span class="color-cell" style="background-color: black;"></span>
+                        黑色
+                    </td>
+                    <td style="border: 1px solid #333; padding: 8px;">不付息</td>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        {% if part1 == 'risk' %}{{ black_prob }}%{% else %}未知{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        <span class="color-cell" style="background-color: white;"></span>
+                        白色
+                    </td>
+                    <td style="border: 1px solid #333; padding: 8px;">付息</td>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        {% if part1 == 'risk' %}{{ white_prob }}%{% else %}未知{% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+<!-- 红黄蓝付息金额（修改为与DividendPage2一致的样式） -->
+    <div style="margin: 0 10px; margin-top: 20px;">
+        <table style="border-collapse: collapse; width: 100%; text-align: center; margin: 0 auto;">
+            <thead>
+                <tr style="border: 1px solid #333; background-color: #f0f0f0;"> <!-- 表头背景色与边框 -->
+                    <th style="border: 1px solid #333; padding: 8px;">颜色</th>
+                    <th style="border: 1px solid #333; padding: 8px;">股息金额</th>
+                    <th style="border: 1px solid #333; padding: 8px;">概率</th> <!-- 新增概率列，与DividendPage2结构一致 -->
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        <!-- 色块样式与DividendPage2完全一致 -->
+                        <span style="display: inline-block; width: 20px; height: 20px; background: red; border: 1px solid #999;"></span>
+                        红色
+                    </td>
+                    <td style="border: 1px solid #333; padding: 8px;">4</td>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        {% if part2 == 'risk' %}{{ red_prob }}%{% else %}未知{% endif %} <!-- 概率逻辑与DividendPage2一致 -->
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: yellow; border: 1px solid #999;"></span>
+                        黄色
+                    </td>
+                    <td style="border: 1px solid #333; padding: 8px;">28</td>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        {% if part2 == 'risk' %}{{ yellow_prob }}%{% else %}未知{% endif %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        <span style="display: inline-block; width: 20px; height: 20px; background: blue; border: 1px solid #999;"></span>
+                        蓝色
+                    </td>
+                    <td style="border: 1px solid #333; padding: 8px;">60</td>
+                    <td style="border: 1px solid #333; padding: 8px;">
+                        {% if part2 == 'risk' %}{{ blue_prob }}%{% else %}未知{% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+{% if num_assets > 1 %}
+<div>
+    <table>
+        资产B信息
+        <tr>
+            <th>状态</th>
+            <th>发生概率</th>
+            <th>资产B回报</th>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>{{ p0 }}%</td>
+            <td><b>0</b></td>
+        </tr>
+        {% if num_states >= 1 %}
+        <tr>
+            <td>1</td>
+            <td>{{ p1 }}%</td>
+            <td><b>{{ asset_b_return_1 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 2 %}
+        <tr>
+            <td>2</td>
+            <td>{{ p2 }}%</td>
+            <td><b>{{ asset_b_return_2 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 3 %}
+        <tr>
+            <td>3</td>
+            <td>{{ p3 }}%</td>
+            <td><b>{{ asset_b_return_3 }}</b></td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endif %}
+
+{% if num_assets > 2 %}
+<div>
+    <table>
+        资产C信息
+        <tr>
+            <th>状态</th>
+            <th>发生概率</th>
+            <th>资产C回报</th>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>{{ p0 }}%</td>
+            <td><b>0</b></td>
+        </tr>
+        {% if num_states >= 1 %}
+        <tr>
+            <td>1</td>
+            <td>{{ p1 }}%</td>
+            <td><b>{{ asset_c_return_1 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 2 %}
+        <tr>
+            <td>2</td>
+            <td>{{ p2 }}%</td>
+            <td><b>{{ asset_c_return_2 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 3 %}
+        <tr>
+            <td>3</td>
+            <td>{{ p3 }}%</td>
+            <td><b>{{ asset_c_return_3 }}</b></td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endif %}
+
+{% if num_assets > 3 %}
+<div>
+    <table>
+        资产D信息
+        <tr>
+            <th>状态</th>
+            <th>发生概率</th>
+            <th>资产D回报</th>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>{{ p0 }}%</td>
+            <td><b>0</b></td>
+        </tr>
+        {% if num_states >= 1 %}
+        <tr>
+            <td>1</td>
+            <td>{{ p1 }}%</td>
+            <td><b>{{ asset_d_return_1 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 2 %}
+        <tr>
+            <td>2</td>
+            <td>{{ p2 }}%</td>
+            <td><b>{{ asset_d_return_2 }}</b></td>
+        </tr>
+        {% endif %}
+        {% if num_states >= 3 %}
+        <tr>
+            <td>3</td>
+            <td>{{ p3 }}%</td>
+            <td><b>{{ asset_d_return_3 }}</b></td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+{% endif %}
+</div>
+
+<!-- 交易区保持不变 -->
+<div class="container-fluid" id="online">
+    <div class="row" style="flex-wrap: wrap;justify-content: center">
+        {% for asset in assets %}
+        <div class="col-lg-4 col-md-4 mb-4" style="border: 1px solid black; padding: 5px; margin: 10px 10px;">
+            <h2 class="text-center">Asset {{ asset }}</h2>
+
+            <div class="market-container d-flex justify-content-between">
+                <div class="market-column-wrapper d-flex flex-column">
+                    <h5 class="text-center">Bids</h5>
+                    <div id="bids-list-{{ asset }}" class="market-column flex-grow-1" style="overflow-y: auto; ">
+                    </div>
+                    <div class="d-flex align-items-center mt-2">
+                        <label for="buyPrice{{ asset }}" class="me-2">Price</label>
+                        <input type="number" class="form-control me-2" id="buyPrice{{ asset }}" min="0"
+                               style="max-width: 100%;">
+                        <button type="button" style="background: rgb(255, 255, 0);border-color: black" class="btn btn-warning flex-shrink-0"
+                                onclick="UserSendEnter(document.getElementById('buyPrice{{ asset }}'), '{{ asset }}', true)">
+                            Buy
+                        </button>
+                    </div>
+                </div>
+
+                <div class="market-column-wrapper">
+                    <h5 class="text-center">Trades</h5>
+                    <div id="trades-list-{{ asset }}" class="market-column flex-grow-1" style="overflow-y: auto; ">
+                    </div>
+                </div>
+
+                <div class="market-column-wrapper d-flex flex-column">
+                    <h5 class="text-center">Asks</h5>
+                    <div id="asks-list-{{ asset }}" class="market-column flex-grow-1" style="overflow-y: auto; ">
+                    </div>
+                    <div class="d-flex align-items-center mt-2">
+                        <label for="sellPrice{{ asset }}" class="me-2">Price</label>
+                        <input type="number" class="form-control me-2" id="sellPrice{{ asset }}" min="0"
+                               style="max-width: 100%;">
+                        <button type="button" style="background: rgb(193, 229, 245);border-color: black;color: black" class="btn btn-primary flex-shrink-0"
+                                onclick="UserSendEnter(document.getElementById('sellPrice{{ asset }}'), '{{ asset }}', false)">
+                            Sell
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+
+    <div class="row" style="height: 30vh;flex-wrap: nowrap;justify-content: center;padding: 0rem 3rem 0rem 3rem;">
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            .container {
+                height: 100%;
+                padding: 20px;
+            }
+
+            .table {
+                width: 30em;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .table > div {
+                display: flex;
+            }
+
+            .table span {
+                flex: 1;
+            }
+
+            .table .header {
+                border-bottom: 1px solid black;
+                font-weight: bold;
+            }
+        </style>
+
+        <div class="container col-md-6" style="border: 1px solid black;margin: 0.5rem; ">
+            <div class="table">
+                <div class="header">
+                    <span>Asset</span>
+                    <span>Available</span>
+                    <span>Settled</span>
+                    <span>Requested</span>
+                    <span>Offered</span>
+                </div>
+            </div>
+            <div>
+                <span>Available Cash: </span>
+                <span id="AvailableCash">${{ settled_cash }}</span>
+            </div>
+            <div>
+                <span>Settled Cash: </span>
+                <span id="SettledCash">${{ settled_cash }}</span>
+            </div>
+        </div>
+
+        <div id="messages" class="container col-md-6"
+             style="border: 1px solid black; margin: 0.5rem; overflow-y: scroll;">
+        </div>
+    </div>
+</div>
+
+
+<!-- 模态框和JS逻辑保持不变 -->
+<!-- Modal for Delete Confirmation -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Confirm Deletion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this order?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Decline</button>
+                <button type="button" class="btn btn-primary" id="confirmDeleteBtn">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal for Trade Confirmation -->
+<div class="modal fade" id="tradeConfirmModal" tabindex="-1" role="dialog" aria-labelledby="tradeConfirmLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tradeConfirmLabel">Confirm Trade</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="sell">
+                Are you sure you want to proceed with this trade?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Decline</button>
+                <button type="button" class="btn btn-primary" id="confirmTradeBtn">Accept</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script type="application/javascript">
+var cc = {{ settled_assets }} // 对象数据
+var settled_cash = {{ settled_cash }} // 数值数据
+
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 获取表格的父容器
+    var table = document.querySelector('.table');
+
+    // 遍历 cc 对象的键值对
+    Object.entries(cc).forEach(function([asset, settledValue]) {
+        // 创建每一行 <div>
+        var rowDiv = document.createElement('div');
+
+        // 创建 Asset <span>
+        var assetSpan = document.createElement('span');
+        assetSpan.textContent = asset;
+        rowDiv.appendChild(assetSpan);
+
+        // 创建 Available <span> 并设置唯一 ID
+        var availableSpan = document.createElement('span');
+        availableSpan.textContent = settledValue; // 占位符
+        availableSpan.id = `available-${asset}`;
+        rowDiv.appendChild(availableSpan);
+
+        // 创建 Settled <span> 并插入 cc 的值，设置唯一 ID
+        var settledSpan = document.createElement('span');
+        settledSpan.textContent = settledValue;
+        settledSpan.id = `settled-${asset}`;
+        rowDiv.appendChild(settledSpan);
+
+        // 创建 Requested <span> 并设置唯一 ID
+        var requestedSpan = document.createElement('span');
+        requestedSpan.textContent = '-'; // 占位符
+        requestedSpan.id = `requested-${asset}`;
+        rowDiv.appendChild(requestedSpan);
+
+        // 创建 Offered <span> 并设置唯一 ID
+        var offeredSpan = document.createElement('span');
+        offeredSpan.textContent = '-'; // 占位符
+        offeredSpan.id = `offered-${asset}`;
+        rowDiv.appendChild(offeredSpan);
+
+        // 将生成的行插入到表格中
+        table.appendChild(rowDiv);
+    });
+});
+
+
+
+    var marketState = {
+        "A": {bids: [], asks: [], trades: []},
+        "B": {bids: [], asks: [], trades: []},
+        "C": {bids: [], asks: [], trades: []},
+        "D": {bids: [], asks: [], trades: []},
+        // Add more assets if needed
+    };
+
+    $('#deleteConfirmModal .close, #deleteConfirmModal .btn-secondary').on('click', function () {
+        $('#deleteConfirmModal').modal('hide');
+    });
+
+
+    $('#tradeConfirmModal .close, #tradeConfirmModal .btn-secondary').on('click', function () {
+        $('#tradeConfirmModal').modal('hide');
+    });
+
+    // 初始加载时的trader_state数据
+    var traderState = {{ trader_state }}
+
+
+    var currentPcode = "{{ player.id_in_group }}"
+
+    var payloadToDelete = ""
+
+    function formatTradeData(data) {
+        if (data.payload && data.payload.making_orders && data.payload.taking_order) {
+            const order = data.payload.making_orders;
+            const takingOrder = data.payload.taking_order;
+        let price;
+        if (order.timestamp <= takingOrder.timestamp) {
+            price = order.price;
+        } else {
+            price = takingOrder.price;
+        }
+        const formattedTrade = {
+            buyer_id: order.pcode,
+            seller_id: takingOrder.pcode,
+            price: price,
+            volume: order.volume,
+            asset_name: order.asset_name,
+            timestamp: order.timestamp
+        };
+        return formattedTrade;
+        }
+    }
+
+    function liveRecv(data) {
+        console.log('received a message!', data);
+        if (data.channel === "confirm_enter") {
+            insertOrder(data);
+        } else if (data.channel === "confirm_cancel") {
+            handleConfirmCancel(data.payload);
+        } else if (data.channel === "confirm_trade") {
+            handleConfirmCancel(data.payload.making_orders, data.payload.asset_name)
+            handleConfirmCancel(data.payload.taking_order, data.payload.asset_name)
+            insertTrader = formatTradeData(data)
+            insertOrder({"payload": insertTrader})
+let Price = 0;
+if (data.payload.making_orders.timestamp > data.payload.taking_order.timestamp) {
+    Price = data.payload.taking_order.price;
+} else {
+    Price = data.payload.making_orders.price;
+}
+
+if (data.payload.making_orders.is_bid && data.payload.making_orders.pcode === currentPcode) {
+  addMessage(`You bought asset ${data.payload.asset_name} for $${Price}`, "red");
+}
+
+if (!data.payload.taking_order.is_bid && data.payload.taking_order.pcode === currentPcode) {
+  addMessage(`You sold asset ${data.payload.asset_name} for $${Price}`, "red");
+}
+
+        }else if (data.channel === "messages" || data.channel === "error") {
+          console.info(data.data)
+          addMessage(data.data,"red")
+        }
+        totoal_accces()
+
+    }
+
+
+    function addMessage(messageText, color) {
+        var messagesDiv = document.getElementById("messages");
+        var newMessage = document.createElement("div");
+        newMessage.innerText = messageText;
+        newMessage.style.color = color;
+        newMessage.style.fontSize = "1.5rem";
+        messagesDiv.appendChild(newMessage);
+    }
+
+
+
+
+    function handleConfirmCancel(order, asset_name = null) {
+        if (asset_name === null) {
+            asset_name = order.asset_name
+        }
+        const targetCollection = order.is_bid ? marketState[asset_name].bids : marketState[asset_name].asks;
+        removeOrder(targetCollection, order.order_id);
+    }
+
+    function removeOrder(collection, orderId) {
+        const index = collection.findIndex(order => order.order_id === orderId);
+        if (index !== -1) {
+            collection.splice(index, 1);
+        }
+        updateMarketState(marketState)
+    }
+
+    function clearAllLists() {
+        const bidLists = document.querySelectorAll('[id^="bids-list-"]');
+        const askLists = document.querySelectorAll('[id^="asks-list-"]');
+        const tradeLists = document.querySelectorAll('[id^="trades-list-"]');
+        bidLists.forEach(list => list.innerHTML = '');
+        askLists.forEach(list => list.innerHTML = '');
+        tradeLists.forEach(list => list.innerHTML = '');
+    }
+
+    function insertOrder(data) {
+        const payload = data.payload;
+        const assetName = payload.asset_name;
+        const order = payload;
+        let collection = payload.is_bid ? marketState[assetName].bids : marketState[assetName].asks;
+        if (payload.is_bid === undefined) {
+            collection = marketState[assetName].trades
+        }
+        let inserted = false;
+        for (let i = 0; i < collection.length; i++) {
+            const currentOrder = collection[i];
+            const currentAmount = currentOrder.price * currentOrder.volume;
+            const newAmount = order.price * order.volume;
+            if (payload.is_bid === true) {
+                if (
+                    order.price > currentOrder.price ||
+                    (order.price === currentOrder.price && newAmount > currentAmount) ||
+                    (order.price === currentOrder.price && newAmount === currentAmount && order.timestamp > currentOrder.timestamp)
+                ) {
+                    collection.splice(i, 0, order);
+                    inserted = true;
+                    break;
+                }
+            } else if (payload.is_bid === false) {
+                if (
+                    order.price < currentOrder.price ||
+                    (order.price === currentOrder.price && newAmount > currentAmount) ||
+                    (order.price === currentOrder.price && newAmount === currentAmount && order.timestamp > currentOrder.timestamp)
+                ) {
+                    collection.splice(i, 0, order);
+                    inserted = true;
+                    break;
+                }
+            } else {
+                if (order.timestamp > currentOrder.timestamp) {
+                    collection.splice(i, 0, order);
+                    inserted = true;
+                    break;
+                }
+            }
+        }
+        if (!inserted) {
+            collection.push(order);
+        }
+        updateMarketState(marketState);
+    }
+
+
+    function updateMarketState(data) {
+        clearAllLists();
+        for (const asset in data) {
+            const bidsList = document.getElementById(`bids-list-${asset}`);
+            const asksList = document.getElementById(`asks-list-${asset}`);
+            const tradesList = document.getElementById(`trades-list-${asset}`);
+            data[asset].bids.forEach(bid => {
+                addBidElement(bidsList, bid.price, bid.timestamp, bid.pcode === currentPcode, bid);
+            });
+            data[asset].asks.forEach(ask => {
+                addAskElement(asksList, ask.price, ask.timestamp, ask.pcode === currentPcode, ask);
+            });
+            data[asset].trades.forEach(trade => {
+                addTradeElement(tradesList, trade.price, trade.volume, trade.timestamp, trade.buyer_id, trade.seller_id);
+            });
+        }
+    }
+
+    function confirmTrade(payload) {
+        document.getElementById("sell").textContent = "Do you want to sell asset " + payload.asset_name + " for $" + payload.price + "?"
+        $('#tradeConfirmModal').modal('show');
+        document.getElementById('confirmTradeBtn').onclick = function () {
+            UserSendAccept(payload);
+            $('#tradeConfirmModal').modal('hide');
+        }
+    }
+        function confirmTradeAsk(payload) {
+        document.getElementById("sell").textContent = "Do you want to buy asset " + payload.asset_name + " for $" + payload.price + "?"
+        $('#tradeConfirmModal').modal('show');
+        document.getElementById('confirmTradeBtn').onclick = function () {
+            UserSendAcceptASK(payload);
+            $('#tradeConfirmModal').modal('hide');
+        }
+    }
+
+
+
+    function addBidElement(bidsList, price, timestamp, isOwnBid, payload) {
+        const bidItem = document.createElement('div');
+        bidItem.className = 'd-flex justify-content-between align-items-center mb-1';
+        bidItem.style.padding = '5px';
+        bidItem.style.backgroundColor = isOwnBid ? 'rgb(255, 255, 0)' : '#f8f8f8';
+        bidItem.style.border = '1px solid black';
+        bidItem.innerHTML = `
+            <span>$${price} <small class="text-muted">${formatTimestamp(timestamp)}</small></span>
+               ${isOwnBid ? `<button type="button" class="btn  btn-sm" onclick='confirmDelete(${JSON.stringify(payload)})'>&#x274C;</button>` : ''}
+        `;
+        if (!isOwnBid) {
+            bidItem.addEventListener('dblclick', () => confirmTrade(payload));
+        }
+        bidsList.appendChild(bidItem);
+    }
+
+
+    function addAskElement(asksList, price, timestamp, isOwnAsk, payload) {
+        const askItem = document.createElement('div');
+        askItem.className = 'd-flex justify-content-between align-items-center mb-1';
+        askItem.style.padding = '5px';
+        askItem.style.backgroundColor = isOwnAsk ? 'rgb(193, 229, 245)' : '#f8f8f8';
+        askItem.style.border = '1px solid black';
+        askItem.innerHTML = `
+            <span>$${price} <small class="text-muted">${formatTimestamp(timestamp)}</small></span>
+               ${isOwnAsk ? `<button type="button" class="btn  btn-sm" onclick='confirmDelete(${JSON.stringify(payload)})'>&#x274C;</button>` : ''}
+        `;
+        if (!isOwnAsk) {
+            askItem.addEventListener('dblclick', () => confirmTradeAsk(payload));
+        }
+        asksList.appendChild(askItem);
+    }
+
+    function addTradeElement(tradesList, price, volume, timestamp, buyerId, sellerId) {
+        const tradeItem = document.createElement('div');
+        tradeItem.className = 'd-flex justify-content-between align-items-center mb-1';
+        tradeItem.style.padding = '5px';
+        tradeItem.style.border ='1px solid black';
+        if (buyerId === currentPcode) {
+            tradeItem.style.backgroundColor = 'rgb(255, 255, 0)';
+        } else if (sellerId === currentPcode) {
+            tradeItem.style.backgroundColor = 'rgb(193, 229, 245)';
+        } else {
+            tradeItem.style.backgroundColor = '#f0f0f0';
+        }
+        tradeItem.innerHTML = `
+        <span>${volume} @ $${price} <small class="text-muted">${formatTimestamp(timestamp)}</small></span>
+    `;
+        tradesList.appendChild(tradeItem);
+    }
+
+    function formatTimestamp(timestamp) {
+        const date = new Date(timestamp);
+        return ""
+        return date.toLocaleTimeString();
+    }
+
+
+    window.confirmDelete = function (payload) {
+        payloadToDelete = payload;
+        $('#deleteConfirmModal').modal('show');
+    };
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (payloadToDelete) {
+            UserSendCancel(payloadToDelete);
+            payloadToDelete = null;
+        }
+        $('#deleteConfirmModal').modal('hide');
+    });
+
+
+    function UserSendEnter(price, category, ctype) {
+        if (parseFloat(price.value)<0){
+            if (ctype){
+                addMessage(`Cannot enter negative bid.`, "red");
+            }else{
+                addMessage(`Cannot enter negative ask.`, "red");
+            }
+            return
+        }
+        if (parseFloat(price.value)>99999){
+            if (!ctype){
+                 addMessage(`Your ask is too large.`, "red");
+            }
+            return
+        }
+        let payload = {
+            "price": parseFloat(price.value),
+            "volume": 1,
+            "is_bid": ctype,
+            "asset_name": category,
+            "pcode": "{{ player.id_in_group }}",
+            "type":"maker"
+        }
+        let toData = {
+            "channel": "enter",
+            "payload": payload
+        }
+        liveSend(toData)
+    }
+
+    function UserSendCancel(payload) {
+        let toData = {
+            "channel": "cancel",
+            "payload": payload
+        }
+        liveSend(toData)
+    }
+
+    function UserSendAccept(payload) {
+        let payloads = {
+            "price": parseFloat(payload.price),
+            "volume": 1,
+            "is_bid": false,
+            "asset_name": payload.asset_name,
+            "pcode": "{{ player.id_in_group }}",
+            "type":"taker"
+        }
+        let toData = {
+            "channel": "enter",
+            "payload": payloads
+        }
+        liveSend(toData)
+    }
+        function UserSendAcceptASK(payload) {
+        let payloads = {
+            "price": parseFloat(payload.price),
+            "volume": 1,
+            "is_bid": true,
+            "asset_name": payload.asset_name,
+            "pcode": "{{ player.id_in_group }}",
+            "type":"taker"
+        }
+        let toData = {
+            "channel": "enter",
+            "payload": payloads
+        }
+        liveSend(toData)
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+        traderState.bids.forEach(e => {
+            insertOrder({"payload": e})
+        })
+        traderState.asks.forEach(e => {
+            insertOrder({"payload": e})
+        })
+        traderState.trades.forEach(e => {
+            insertOrder({"payload": e})
+        })
+        totoal_accces()
+    });
+
+function totoal_accces() {
+    var requestedCount = {};
+    var offeredCount = {};
+    var traderCount={};
+    Object.entries(marketState).forEach(function ([asset, assetData]) {
+        requestedCount[asset] = {};
+        offeredCount[asset] = {};
+    traderCount[asset] = {};
+        assetData.bids.forEach(function (bid) {
+            if (!requestedCount[asset][bid.pcode]) {
+                requestedCount[asset][bid.pcode] = 0;
+            }
+            requestedCount[asset][bid.pcode]++;
+        });
+        assetData.asks.forEach(function (ask) {
+            if (!offeredCount[asset][ask.pcode]) {
+                offeredCount[asset][ask.pcode] = 0;
+            }
+            offeredCount[asset][ask.pcode]++;
+        });
+        assetData.trades.forEach(function (trade) {
+            if (!traderCount[asset][trade.buyer_id]) {
+                traderCount[asset][trade.buyer_id] = 0;
+            }
+            traderCount[asset][trade.buyer_id]++;
+            if (!traderCount[asset][trade.seller_id]) {
+                traderCount[asset][trade.seller_id] = 0;
+            }
+            traderCount[asset][trade.seller_id]++;
+        });
+    });
+    Object.entries(cc).forEach(function ([asset, assetData]) {
+        document.getElementById("available-" + asset).innerHTML=assetData
+        document.getElementById("settled-" + asset).innerHTML=assetData
+        document.getElementById("requested-" + asset).innerHTML='-'
+        document.getElementById("offered-" + asset).innerHTML='-'
+    });
+    document.getElementById("AvailableCash").innerHTML="$"+parseFloat(settled_cash)
+    document.getElementById("SettledCash").innerHTML="$"+parseFloat(settled_cash)
+    Object.entries(traderCount).forEach(function ([asset, assetData]) {
+        if (assetData.hasOwnProperty({{ player.id_in_group }})) {
+            var playerId = {{ player.id_in_group }};
+            var availableElement = document.getElementById("available-" + asset);
+            var settledElement = document.getElementById("settled-" + asset);
+            var availableCount = parseInt(availableElement.innerHTML) || 0;
+            var settledCount = parseInt(settledElement.innerHTML) || 0;
+            var SettledCashElement = document.getElementById("SettledCash");
+            var SettledCashvalue = parseFloat(SettledCashElement.innerHTML.replace('$', '')) || 0;
+            var AvailableCashElment = document.getElementById("AvailableCash");
+            var AvailableCashvalue = parseFloat(AvailableCashElment.innerHTML.replace('$', '')) || 0;
+            marketState[asset].trades.forEach(function (trade) {
+                if (trade.buyer_id == playerId) {
+                    settledCount += trade.volume;
+                    availableCount += trade.volume
+                    SettledCashvalue -= (trade.volume*trade.price)
+                    AvailableCashvalue -=  (trade.volume*trade.price)
+                } else if (trade.seller_id == playerId) {
+                    settledCount -= trade.volume;
+                    availableCount-=trade.volume
+                    SettledCashvalue += (trade.volume*trade.price)
+                    AvailableCashvalue +=  (trade.volume*trade.price)
+                }
+            });
+            availableElement.innerHTML = availableCount;
+            settledElement.innerHTML = settledCount;
+            SettledCashElement.innerHTML =  `$${SettledCashvalue.toFixed(0)}`;
+            AvailableCashElment.innerHTML = `$${AvailableCashvalue.toFixed(0)}`;
+        }
+    });
+     Object.entries(offeredCount).forEach(function ([asset, assetData]) {
+    if (assetData.hasOwnProperty({{ player.id_in_group }})) {
+        document.getElementById("offered-" + asset).innerHTML = assetData[{{ player.id_in_group }}];
+        document.getElementById("available-" + asset).innerHTML = document.getElementById("available-" + asset).innerHTML-assetData[{{ player.id_in_group }}]
+    }
+});
+    Object.entries(requestedCount).forEach(function ([asset, assetData]) {
+    if (assetData.hasOwnProperty({{ player.id_in_group }})) {
+        document.getElementById("requested-" + asset).innerHTML = assetData[{{ player.id_in_group }}];
+        var AvailableCashElement = document.getElementById("AvailableCash");
+        var AvailableCashValue = parseFloat(AvailableCashElement.innerHTML.replace('$', '')) || 0;
+        marketState[asset].bids.forEach(function (bid) {
+            if (bid.pcode == {{ player.id_in_group }}) {
+                AvailableCashValue -= (bid.volume * bid.price);
+            }
+        });
+        AvailableCashElement.innerHTML = `$${AvailableCashValue.toFixed(0)}`;
+    }
+});
+}
+</script>
+
+
+{% endblock %}

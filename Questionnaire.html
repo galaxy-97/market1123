@@ -1,0 +1,50 @@
+{% extends "global/Page.html" %}
+{% load otree %}
+
+{% block title %}
+问卷 1/2
+{% endblock %}
+{% block content %}
+
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid black;
+    }
+</style>
+
+<p>
+  你已经完成了全部的市场资产交易游戏。
+  在实验结束前，请回答如下的问题。
+</p>
+
+<p>考虑以下两种资产：</p>
+
+<table>
+    <tr>
+      <th>状态</th>
+      <th>发生概率</th>
+      <th>资产A回报</th>
+      <th>资产B回报</th>
+    </tr>
+    <tr>
+        <td>1</td>
+        <td>0.2</td>
+        <td>180</td>
+        <td>20</td>
+    </tr>
+    <tr>
+        <td>3</td>
+        <td>0.8</td>
+        <td>80</td>
+        <td>120</td>
+    </tr>
+</table>
+
+{% formfields %}
+
+{% next_button %}
+
+
+{% endblock %}
