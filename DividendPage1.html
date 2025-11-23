@@ -1,0 +1,254 @@
+{% extends "global/Page.html" %}
+{% load otree static %}
+
+{% block title %}
+是否付息
+{% endblock %}
+
+{% block content %}
+<!-- 玩家ID提示 -->
+<div class="alert alert-info mb-4">
+    <strong>您的玩家ID：{{ player_id }}</strong>（请记住此ID，用于结果查询）
+</div>
+
+<!-- 新增：页面介绍区域 -->
+<div class="well mb-4" style="padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px;">
+    <p><strong>页面说明：</strong>本页用于确定本期资产是否付息。左侧为付息规则的参照矩阵，右侧为交互确认区域(为左侧矩阵的乱序版)。请点击右侧任意色块完成“是否付息”的确定，系统将随机抽取一名参与者的结果作为本期真实结果。</p>
+</div>
+
+<div style="display: flex; gap: 30px; margin: 30px 0; overflow-x: auto; padding-bottom: 10px;">
+    <!-- 第一个矩阵及解释+概率表格 -->
+    <div>
+        <p style="text-align: center; font-weight: bold;">参照矩阵</p>
+        <div id="matrix1" style="display: grid; grid-template-columns: repeat(12, 20px); gap: 2px; border: 2px solid #333; padding: 5px;"></div>
+
+        <!-- 始终显示表格，概率列根据part1动态显示 -->
+        <div style="margin-top: 20px;">
+            <table style="border-collapse: collapse; width: 100%; text-align: center; margin: 0 auto;">
+                <thead>
+                    <tr style="border: 1px solid #333; background-color: #f0f0f0;">
+                        <th style="border: 1px solid #333; padding: 8px;">颜色</th>
+                        <th style="border: 1px solid #333; padding: 8px;">含义</th>
+                        <th style="border: 1px solid #333; padding: 8px;">概率</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 8px;">
+                            <span style="display: inline-block; width: 20px; height: 20px; background: black; border: 1px solid #999;"></span>
+                            黑色
+                        </td>
+                        <td style="border: 1px solid #333; padding: 8px;">不付息</td>
+                        <td style="border: 1px solid #333; padding: 8px;">
+                            {% if part1 == 'risk' %}{{ black_prob }}%{% else %}未知{% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #333; padding: 8px;">
+                            <span style="display: inline-block; width: 20px; height: 20px; background: white; border: 1px solid #999;"></span>
+                            白色
+                        </td>
+                        <td style="border: 1px solid #333; padding: 8px;">付息</td>
+                        <td style="border: 1px solid #333; padding: 8px;">
+                            {% if part1 == 'risk' %}{{ white_prob }}%{% else %}未知{% endif %}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 交互矩阵 -->
+    <div>
+        <p style="text-align: center; font-weight: bold;">（点击任意色块确认）</p>
+        <div id="matrix3" style="display: grid; grid-template-columns: repeat(12, 20px); gap: 2px; border: 2px solid #333; padding: 5px;"></div>
+    </div>
+</div>
+
+<!-- 隐藏表单 -->
+<input type="hidden" name="clicked_index_page1" id="id_clicked_index" value="-1">
+<input type="hidden" name="clicked_color_page1" id="id_clicked_color" value="">
+
+{% next_button %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const part1 = "{{ part1 }}";
+    const totalCells = 12 * 12;
+    const matrix1Original = {{ matrix1_original|json }};
+    const matrix1HideRows = new Set({{ matrix1_hide_rows|json }});
+    const matrix3Data = {{ matrix3_data|json }};  // 1=黑，0=白
+    const colorNames = ['白色', '黑色'];  // 对应0和1
+
+    let matrix3Clicked = false;  // 防止重复点击
+
+    // 生��第一个矩阵
+    function generateMatrix1() {
+        const matrix = document.getElementById('matrix1');
+        matrix.innerHTML = '';
+        for (let i = 0; i < totalCells; i++) {
+            const cell = document.createElement('div');
+            cell.style.width = '20px';
+            cell.style.height = '20px';
+            cell.style.border = '1px solid #999';
+            const row = Math.floor(i / 12);
+            // 遮挡行用灰色覆盖
+            cell.style.background = (part1 === 'ambi' && matrix1HideRows.has(row)) ? '#999' : 
+                                   (matrix1Original[i] === 1 ? 'black' : 'white');
+            matrix.appendChild(cell);
+        }
+    }
+
+    // 生成第三个矩阵（灰色覆盖，点击显示被点击的格子）
+    function generateMatrix3() {
+        const matrix = document.getElementById('matrix3');
+        matrix.innerHTML = '';
+        for (let i = 0; i < totalCells; i++) {
+            const container = document.createElement('div');
+            container.style.position = 'relative';
+            container.style.width = '20px';
+            container.style.height = '20px';
+            container.dataset.index = i;
+
+            // 真实色块（黑白）
+            const realCell = document.createElement('div');
+            realCell.style.width = '20px';
+            realCell.style.height = '20px';
+            realCell.style.border = '1px solid #999';
+            realCell.style.background = matrix3Data[i] === 1 ? 'black' : 'white';
+
+            // 灰色覆盖层（保留为覆盖层，只有被点击的才移除）
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '20px';
+            overlay.style.height = '20px';
+            overlay.style.background = '#999';
+            overlay.style.cursor = 'pointer';
+
+            container.appendChild(realCell);
+            container.appendChild(overlay);
+            matrix.appendChild(container);
+        }
+        bindClickEvent();
+        restoreFromLocal();
+    }
+
+    // 绑定点击事件（事件委托）
+    function bindClickEvent() {
+        const matrix = document.getElementById('matrix3');
+        const indexInput = document.getElementById('id_clicked_index');
+        const colorInput = document.getElementById('id_clicked_color');
+
+        // participant key & round: 优先使用 participant.code（若模板提供 participant），否则使用 player_id
+        const participantKey = "{% if participant %}{{ participant.code }}{% else %}{{ player_id }}{% endif %}";
+        const roundNum = "{% if subsession %}{{ subsession.round_number }}{% else %}0{% endif %}";
+        const pageKey = "market1123_div1_" + participantKey + "_r" + roundNum;
+
+        matrix.addEventListener('click', (e) => {
+            if (matrix3Clicked) return;
+
+            const container = e.target.closest('div[data-index]');
+            if (!container) return;
+
+            const index = parseInt(container.dataset.index);
+            const colorIdx = matrix3Data[index];  // 0=白，1=黑
+            const color = colorNames[colorIdx];
+
+            // 更新表单值
+            if (indexInput) indexInput.value = index;
+            if (colorInput) colorInput.value = color;
+
+            // 只揭示被点击的格子：移除该格 overlay，给真实格子加高亮
+            revealOnly(index);
+
+            // 持久化到 localStorage，防止刷新后回退
+            try {
+                localStorage.setItem(pageKey, JSON.stringify({ index: index, color: colorIdx, ts: Date.now() }));
+            } catch (err) {
+                console.warn('localStorage set failed', err);
+            }
+
+            // 标记已点击，禁止后续修改
+            matrix3Clicked = true;
+        });
+    }
+
+    // 只揭示 index 指向的单元格（其他保持灰色覆盖）
+    function revealOnly(index) {
+        const matrix = document.getElementById('matrix3');
+        if (!matrix) return;
+        const containers = Array.from(matrix.querySelectorAll('div[data-index]'));
+        containers.forEach((el) => {
+            const idx = parseInt(el.dataset.index);
+            const realCell = el.querySelector('div'); // 第一个子元素是真实色块
+            const overlay = el.querySelector('.overlay');
+            if (idx === index) {
+                // 移除覆盖层，仅显示被点击的格子
+                if (overlay) overlay.remove();
+                // 高亮被点击的真实格子（保留你原有样式，只加一个绿色边）
+                if (realCell) realCell.style.border = '3px solid #0f0';
+            } else {
+                // 其余保持覆盖层（如果覆盖层被意外移除，则重新添加）
+                if (!overlay) {
+                    const newOverlay = document.createElement('div');
+                    newOverlay.className = 'overlay';
+                    newOverlay.style.position = 'absolute';
+                    newOverlay.style.top = '0';
+                    newOverlay.style.left = '0';
+                    newOverlay.style.width = '20px';
+                    newOverlay.style.height = '20px';
+                    newOverlay.style.background = '#999';
+                    newOverlay.style.cursor = 'pointer';
+                    el.appendChild(newOverlay);
+                }
+                // 去除高亮（若曾存在）
+                if (realCell) realCell.style.border = '1px solid #999';
+            }
+        });
+    }
+
+    // 从 localStorage 恢复（仅在表单未被服务器/模板预设的情况下恢复）
+    function restoreFromLocal() {
+        const indexInput = document.getElementById('id_clicked_index');
+        // 如果表单已包含合法值（非 -1 或空），优先保留它，不用 localStorage 覆盖
+        if (indexInput && indexInput.value !== "" && indexInput.value !== "-1" && indexInput.value !== null) {
+            matrix3Clicked = true;
+            return;
+        }
+
+        // 构造同上使用的 key（与 bindClickEvent 中相同）
+        const participantKey = "{% if participant %}{{ participant.code }}{% else %}{{ player_id }}{% endif %}";
+        const roundNum = "{% if subsession %}{{ subsession.round_number }}{% else %}0{% endif %}";
+        const pageKey = "market1123_div1_" + participantKey + "_r" + roundNum;
+
+        try {
+            const stored = JSON.parse(localStorage.getItem(pageKey) || 'null');
+            if (stored && Number.isInteger(stored.index)) {
+                // 恢复视觉状态
+                revealOnly(stored.index);
+
+                // 恢复隐藏表单字段，便于未提交仍然保留值
+                if (indexInput) indexInput.value = stored.index;
+                const colorInput = document.getElementById('id_clicked_color');
+                if (colorInput && typeof stored.color !== 'undefined') colorInput.value = colorNames[stored.color];
+
+                // 标记已点击，防止再次修改
+                matrix3Clicked = true;
+            }
+        } catch (e) {
+            console.warn('restore failed', e);
+        }
+    }
+
+    // 页面加载时生成矩阵
+    window.onload = () => {
+        generateMatrix1();
+        generateMatrix3();
+    };
+</script>
+{% endblock %}
