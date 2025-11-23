@@ -137,12 +137,12 @@ market1123/
 | num_assets | int | 资产种类数量（1-4） |
 | num_states | int | 状态数量 |
 | asseta_endowments | str | 资产A初始分配（空格分隔的9个数字） |
-| assetb_endowments | str | 资产B初始分配 |
+| assetb_endowments | str | 资产B初始分配（空格分隔的9个数字） |
 | cash_endowment | str | 现金初始分配（空格分隔的9个数字） |
 | practice | bool | 是否为练习轮 |
 | a1, a2, a3 | int | 资产A在状态1-3的股息 |
 | b1, b2, b3 | int | 资产B在状态1-3的股息 |
-| p0, p1, p2, p3 | float | 各状态概率（用于理论计算，不影响矩阵显示） |
+| p1, p2, p3, p0 | float | 状态1-3和状态0的概率（用于理论计算，不影响矩阵显示） |
 | state_independent | bool | 资产状态是否独立 |
 | ssw_inherit | bool | 是否继承上轮持有量 |
 | treatment | str | 实验处理（如"risk_risk"、"risk_ambi"等） |

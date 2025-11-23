@@ -137,12 +137,12 @@ market1123/
 | num_assets | int | Number of asset types (1-4) |
 | num_states | int | Number of states |
 | asseta_endowments | str | Initial Asset A allocation (9 space-separated numbers) |
-| assetb_endowments | str | Initial Asset B allocation |
+| assetb_endowments | str | Initial Asset B allocation (9 space-separated numbers) |
 | cash_endowment | str | Initial cash allocation (9 space-separated numbers) |
 | practice | bool | Whether this is a practice round |
 | a1, a2, a3 | int | Asset A dividends in states 1-3 |
 | b1, b2, b3 | int | Asset B dividends in states 1-3 |
-| p0, p1, p2, p3 | float | State probabilities (for theoretical calculations, does not affect matrix display) |
+| p1, p2, p3, p0 | float | Probabilities for states 1-3 and state 0 (for theoretical calculations, does not affect matrix display) |
 | state_independent | bool | Whether asset states are independent |
 | ssw_inherit | bool | Whether to inherit holdings from previous round |
 | treatment | str | Experimental treatment (e.g., "risk_risk", "risk_ambi") |
