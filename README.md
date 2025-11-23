@@ -17,8 +17,9 @@ This is an experimental economics application built on the oTree 5 framework, de
 #### Risk Condition
 - Explicit probability distributions: States and probabilities are fully displayed
 - Transparent dividend payment probabilities
-- Page 1: 25% probability of no dividend (black), 75% probability of dividend (white)
-- Page 2: Three dividend levels each with 33.33% probability (red, yellow, blue)
+- Page 1 matrix: Fixed display of 3 rows black (25% probability no dividend), 9 rows white (75% probability dividend)
+- Page 2 matrix: Fixed display of 4 rows each of red, yellow, blue (33.33% probability each for different dividend levels)
+- Note: Matrix probabilities are for interface display; actual dividend amounts are defined by a1/a2/a3 fields in CSV configuration
 
 #### Ambiguity Condition
 - Unclear probability distributions: Partial information is obscured
@@ -141,7 +142,7 @@ market1123/
 | practice | bool | Whether this is a practice round |
 | a1, a2, a3 | int | Asset A dividends in states 1-3 |
 | b1, b2, b3 | int | Asset B dividends in states 1-3 |
-| p0, p1, p2, p3 | float | State probabilities |
+| p0, p1, p2, p3 | float | State probabilities (for theoretical calculations, does not affect matrix display) |
 | state_independent | bool | Whether asset states are independent |
 | ssw_inherit | bool | Whether to inherit holdings from previous round |
 | treatment | str | Experimental treatment (e.g., "risk_risk", "risk_ambi") |
